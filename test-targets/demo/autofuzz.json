@@ -1,0 +1,13 @@
+{
+  "project": "starter-demo",
+  "harness": {
+    "name": "starter",
+    "include": ["src/**/*.mjs"],
+    "options": {
+      "rejectClasses": ["RangeError"]
+    }
+  },
+  "oracles": {},
+  "budget": { "invocations": 2000, "wallClockMs": 60000, "workers": 0, "maxCorpus": 256, "strategy": "guided" },
+  "output": { "dir": ".autofuzz", "renderers": ["json"] }
+}

@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  # The plugin's own suite. The wire-vocabulary contract test reads the engine's docs, so the
+  # engine is checked out beside this repository and named with AFZ_DOCS. There is no install
+  # step: the plugin imports the Node standard library and nothing else.
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: DustinEwan/autofuzz
+          path: .engine
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Tests
+        run: AFZ_DOCS=$GITHUB_WORKSPACE/.engine/docs node --test test/
+
+  # The conformance gate, run through the product command rather than a bespoke harness:
+  # `afz install-harness` drives the suite and prints the report.
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install afz
+        run: cargo install --git https://github.com/DustinEwan/autofuzz.git afz-cli --locked
+
+      - name: Validate
+        run: afz install-harness "$GITHUB_WORKSPACE" --json > report.json
+
+      # The goldens this repository publishes: zero violations, eight template passes, and
+      # the same two justified absences on the protocol side and the fixture side. A deleted
+      # or gutted validator fails the second assertion.
+      - name: Assert the report
+        run: |
+          jq -e '((.violations | length) == 0)
+                 and ((.template.properties | map(select(.verdict == "not-applicable") | .id) | sort) == ["coverage-digest-live","method-receiver"])
+                 and ((.template.properties | map(select(.verdict == "pass")) | length) == 8)' report.json
+          jq -e '((.validator.properties | map(select(.verdict == "pass")) | length) == 5)
+                 and ((.validator.properties | map(select(.verdict == "not-applicable") | .id) | sort) == ["coverage-digest-live","method-receiver"])' report.json
