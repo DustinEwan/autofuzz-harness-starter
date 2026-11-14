@@ -20,15 +20,15 @@ INVALID_REQUEST=-32600
 METHOD_NOT_FOUND=-32601
 PLUGIN_ERROR=-32000
 
-# `docs/schema/handshake.json` $defs.Capability. The scaffold declares `reproducer`
+# `docs/schema/afz-1/handshake.json` $defs.Capability. The scaffold declares `reproducer`
 # and `readiness`; the other five are vocabulary only, so the contract test pins the
 # whole closed set.
 CAPABILITIES="coverage minimize reproducer sideEffects stateful concurrent readiness"
 
-# `docs/schema/skipped-target.json` $defs.SkipReason.
+# `docs/schema/afz-1/skipped-target.json` $defs.SkipReason.
 SKIP_REASONS="unconstructible-parameter discovery-error not-public excluded unsupported-signature target-disabled"
 
-# `docs/schema/target-descriptor.json` $defs.Materialization.
+# `docs/schema/afz-1/target-descriptor.json` $defs.Materialization.
 MATERIALIZATIONS="constructible fixture-required opaque"
 
 # The scaffold's own conventions, which the README states:
