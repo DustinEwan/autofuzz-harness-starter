@@ -9,7 +9,7 @@
 //
 // Run with:
 //
-//     node --test test/
+//     node --test
 //
 // The engine checkout supplies the documents: `AFZ_DOCS` names its docs directory (CI
 // sets it), and the default is the sibling checkout local work shares.

@@ -37,7 +37,7 @@ afz validate-harness
 Run the unit tests and the wire-vocabulary contract tests:
 
 ```sh
-AFZ_DOCS=/path/to/autofuzz/docs node --test test/
+AFZ_DOCS=/path/to/autofuzz/docs node --test
 ```
 
 `AFZ_DOCS` points at an engine checkout; `test/contract.test.mjs` reads `docs/schema/`, `docs/architecture.md`, and `docs/harness-authoring.md` from it. The default is the sibling checkout `../autofuzz/docs`; CI sets the variable explicitly.

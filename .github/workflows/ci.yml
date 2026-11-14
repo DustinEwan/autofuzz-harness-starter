@@ -24,7 +24,7 @@ jobs:
           node-version: 24
 
       - name: Tests
-        run: AFZ_DOCS=$GITHUB_WORKSPACE/.engine/docs node --test test/
+        run: AFZ_DOCS=$GITHUB_WORKSPACE/.engine/docs node --test
 
   # The conformance gate, run through the product command rather than a bespoke harness:
   # `afz install-harness` drives the suite and prints the report.

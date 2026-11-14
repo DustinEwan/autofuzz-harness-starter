@@ -10,10 +10,10 @@
 export const PROTOCOL_VERSION = "afz/1";
 export const JSONRPC_VERSION = "2.0";
 
-// The seven methods the design declares. The scaffold answers five of them; `minimize`
-// and `coverageMap` reach the method-not-found path because the handshake does not
-// declare those capabilities.
-export const METHOD_NAMES = ["handshake", "discover", "prepare", "invoke", "minimize", "reproducer", "coverageMap"];
+// The eight methods the design declares. The scaffold answers five of them; `minimize`,
+// `coverageMap`, and `ready` reach the method-not-found path because the handshake does
+// not declare those capabilities.
+export const METHOD_NAMES = ["handshake", "discover", "prepare", "invoke", "minimize", "reproducer", "coverageMap", "ready"];
 
 // Error codes and the phrases the guide attaches to them (docs/harness-authoring.md).
 export const ERROR_CODES = {
@@ -29,7 +29,7 @@ export const ERROR_PHRASES = {
   [-32000]: "plugin error",
 };
 
-export const CAPABILITIES = ["coverage", "minimize", "reproducer", "sideEffects", "stateful", "concurrent"];
+export const CAPABILITIES = ["coverage", "minimize", "reproducer", "sideEffects", "stateful", "concurrent", "readiness"];
 export const TARGET_CLASSES = ["design-time", "runtime"];
 export const SKIP_REASONS = [
   "unconstructible-parameter",
