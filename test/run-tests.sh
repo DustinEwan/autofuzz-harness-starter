@@ -100,7 +100,7 @@ fi
 
 # schema_enum FILE $DEFS-NAME -> sorted members, from `enum` or `oneOf` of consts.
 schema_enum() {
-  bash "$JS" < "$docs/schema/$1" 2>/dev/null | awk -F'\t' \
+  bash "$JS" < "$docs/schema/afz-1/$1" 2>/dev/null | awk -F'\t' \
     -v e="[\"\$defs\",\"$2\",\"enum\"" -v o="[\"\$defs\",\"$2\",\"oneOf\"" '
       substr($1, 1, length(e)) == e || (substr($1, 1, length(o)) == o && $1 ~ /,"const"\]$/) {
         sub(/^[^\t]*\t/, ""); gsub(/^"|"$/, ""); print
