@@ -1,8 +1,8 @@
 {
   "name": "starter",
-  "command": ["node", "plugin/server.mjs"],
+  "command": ["sh", "plugin/server.sh"],
   "conformance": {
-    "emitter": ["node", "conformance/emit.mjs"],
+    "emitter": ["sh", "conformance/emit.sh"],
     "deadlineMs": 1500
   }
 }

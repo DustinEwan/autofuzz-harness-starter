@@ -1,0 +1,19 @@
+JSON.sh — vendored, verbatim, from:
+
+  https://raw.githubusercontent.com/dominictarr/JSON.sh/master/JSON.sh
+
+Author: Dominic Tarr. License: MIT OR Apache-2.0 (the repository is dual-licensed;
+both texts apply to the vendored file).
+
+Why this file is vendored rather than installed: the starter must validate from a
+fresh clone with zero network fetches, and `afz validate-harness` may run on a
+machine that has nothing but a POSIX shell. JSON.sh is 208 lines of pure shell
+with no external commands, it parses correctly under `dash` (the `/bin/sh` of the
+CI image), and it handles escaped quotes and backslashes; a realistic `invoke`
+line parses in about 60 ms, which is 4% of this harness's 1500 ms deadline.
+
+What the plugin does with it: `vendor/JSON.sh` prints one `<path>\t<value>` line
+per JSON node, where a leaf value is the raw JSON token text. The plugin reads
+the paths it needs (`["id"]`, `["method"]`, `["params","values",0,"node"]`, …)
+and never reconstructs the whole document. JSON generation stays `printf`:
+JSON.sh parses, it does not write.
