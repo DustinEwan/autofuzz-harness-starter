@@ -5,7 +5,8 @@
 # reading of `waitpid`-level information - it never inspects the target's source and
 # never turns a nonzero exit into a crash by guessing.
 #
-#   exit 0    -> ok; stdout is the return value, empty stdout is `undefined`
+#   exit 0    -> ok; stdout is the return value; empty stdout is `undefined`; stdout
+#               that is not text is a value the wire cannot carry, so ok carries none
 #   exit 3    -> rejected via reject-class (the project's own guard convention)
 #   exit 124  -> deadline-cut (timeout(1) reports its own kill this way)
 #   exit 2    -> thrown ShellError (a dash runtime error: file, line, message)
@@ -75,6 +76,14 @@ build_argv() {
   done
 }
 
+# A return value has a wire form only when stdout is text: valid UTF-8 with no NUL
+# byte. Anything else - a serialized struct, a raw handle's contents - is the
+# scaffold's opaque value, and the wire vocabulary has no node for it.
+is_text() {
+  [ "$(tr -d -c '\0' < "$1" | wc -c | tr -dc 0-9)" -eq 0 ] || return 1
+  iconv -f UTF-8 -t UTF-8 -o /dev/null "$1" 2> /dev/null
+}
+
 h_invoke() {
   started=$(date +%s%N)
   ROOT=$(cat "$tmp/root" 2>/dev/null || printf '%s' "$PWD")
@@ -120,11 +129,16 @@ h_invoke() {
 
   case $code in
     0)
-      if [ -s "$tmp/out" ]; then
+      if [ ! -s "$tmp/out" ]; then
+        printf '{"kind":"ok","durationMs":%d,"value":{"node":"undefined"}}' "$ms"
+      elif is_text "$tmp/out"; then
         printf '{"kind":"ok","durationMs":%d,"value":{"node":"string","value":"%s"}}' \
           "$ms" "$(awk -v mode=escape -f "$JSON_AWK" < "$tmp/out")"
       else
-        printf '{"kind":"ok","durationMs":%d,"value":{"node":"undefined"}}' "$ms"
+        # opaque-return: the call succeeded and the value exists, but its bytes have
+        # no ValueTree form, so ok answers with no value - never a broken frame and
+        # never a fault the target did not cause.
+        printf '{"kind":"ok","durationMs":%d}' "$ms"
       fi
       ;;
     "$EXIT_REJECT")

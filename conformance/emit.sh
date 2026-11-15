@@ -2,7 +2,7 @@
 # Render the conformance fixture project for the shell starter harness.
 #
 # `afz validate-harness` and `afz-xtask check-harness` validate a plugin against the
-# template (`crates/afz-conformance/template/v1.json`): ten semantic properties stated
+# (`crates/afz-conformance/template/v1.json`): twelve semantic properties stated
 # as wire-level expectations. This emitter copies the demo executables and the scan
 # project from `test-targets/demo`, renders `conformance/validate.sh` beside them, and
 # writes `afz-conformance-manifest.json` naming the target behind each property. The
@@ -15,10 +15,11 @@
 # `test/run-tests.sh` drives and the project the suite validates are the same files,
 # not two transcriptions of one idea.
 #
-# Two properties are declared not-applicable, and the CI gate asserts that these are
-# the only such lines for the scaffold: an executable file has no receiver to block,
-# and the scaffold declares no coverage capability, so two inputs have no live digest
-# to differ on. Declaring the absence is honest; inventing a fake pass is not.
+# Three properties are declared not-applicable, and the CI gate asserts that these
+# are the only such lines for the scaffold: an executable file has no receiver to
+# block, the scaffold declares no coverage capability so two inputs have no live
+# digest to differ on, and there is no build step that could fail for one symbol
+# alone. Declaring the absence is honest; inventing a fake pass is not.
 
 set -e
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -81,6 +82,13 @@ cat > "$out/afz-conformance-manifest.json" <<'MANIFEST'
     "deadline-sleep": {
       "symbol": "sleepy",
       "input": [{ "node": "number", "value": 30000, "provenance": "user" }]
+    },
+    "opaque-return": {
+      "symbol": "opaque",
+      "input": [{ "node": "string", "value": "handle-7", "provenance": "user" }]
+    },
+    "unbuildable-symbol": {
+      "notApplicable": "the scaffold has no build or load step for a symbol to fail: discovery reads file text and never compiles, and prepare only records the argv it will exec, so nothing can be discovered and then be unbuildable; the rule's isolation half is judged against method-receiver, which the scaffold likewise declares not-applicable"
     }
   },
   "validator": ["sh", "conformance/validate.sh"]

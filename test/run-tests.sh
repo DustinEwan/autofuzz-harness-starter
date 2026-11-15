@@ -157,20 +157,21 @@ expect_row "$(frame 3 "$tmp/out")" '["error","code"]' -32601 \
   "an undeclared capability method gets method-not-found"
 
 f4=$(frame 4 "$tmp/out")
-if [ "$(target_names "$f4")" = "$(printf 'boom\ndiscount\nnoisy\nsleepy')" ] &&
+if [ "$(target_names "$f4")" = "$(printf 'boom\ndiscount\nnoisy\nopaque\nsleepy')" ] &&
    [ "$(skipped_with "$f4" not-public)" = "_cache" ] &&
    [ "$(skipped_with "$f4" unsupported-signature)" = "untyped" ] &&
    [ "$(skipped_with "$f4" unconstructible-parameter)" = "post" ] &&
    hasval "$f4" '["result","skipped",' '"channel"' ]; then
-  ok "discover yields the four fuzzable executables and names each skip reason"
+  ok "discover yields the five fuzzable executables and names each skip reason"
 else
-  bad "discover yields the four fuzzable executables and names each skip reason"
+  bad "discover yields the five fuzzable executables and names each skip reason"
   printf '# %s\n' "$f4" >&2
 fi
 
 boom=$(target_id "$f4" boom)
 discount=$(target_id "$f4" discount)
 noisy=$(target_id "$f4" noisy)
+opaque=$(target_id "$f4" opaque)
 sleepy=$(target_id "$f4" sleepy)
 
 # Target ids exist only after discover, so the session continues in a second
@@ -184,6 +185,7 @@ say '{"jsonrpc":"2.0","id":8,"method":"invoke","params":{"targetId":"'"$sleepy"'
 say '{"jsonrpc":"2.0","id":9,"method":"invoke","params":{"targetId":"afz:t:000000000000","deadlineMs":500,"values":[]}}'
 say '{"jsonrpc":"2.0","id":10,"method":"reproducer","params":{"targetId":"'"$boom"'","values":[]}}'
 say '{"jsonrpc":"2.0","id":11,"method":"ready","params":{}}'
+say '{"jsonrpc":"2.0","id":12,"method":"invoke","params":{"targetId":"'"$opaque"'","deadlineMs":5000,"values":[{"node":"string","value":"handle-7"}]}}'
 sh "$repo/plugin/server.sh" < "$req" > "$tmp/out2" 2>> "$tmp/err.log"
 
 f5=$(frame 5 "$tmp/out2")
@@ -240,14 +242,26 @@ fi
 expect_row "$(frame 11 "$tmp/out2")" '["result","ready"]' true \
   "readiness reports ready after a discovery whose files remain"
 
+# opaque-return: the executable that answers with bytes that are not text still
+# succeeded, so the outcome is ok - and it carries no value, because a frame that
+# holds raw bytes is a frame the engine cannot read.
+f12=$(frame 12 "$tmp/out2")
+if [ "$(rowof "$f12" '["result","kind"]')" = '"ok"' ] &&
+   [ -z "$(rowof "$f12" '["result","value"]')" ]; then
+  ok "a return value the wire cannot carry answers ok with no value"
+else
+  bad "a return value the wire cannot carry answers ok with no value"
+  printf '# %s\n' "$f12" >&2
+fi
+
 # stdout purity: every response line is exactly one JSON frame, and nothing a
-# target wrote leaked onto the channel.
+# target wrote leaked onto the channel - not even the opaque return value.
 lines=$(wc -l < "$tmp/out2")
 pure=0
 while IFS= read -r l; do
   printf '%s' "$l" | bash "$JS" >/dev/null 2>&1 || pure=1
 done < "$tmp/out2"
-if [ "$lines" -eq 8 ] && [ "$pure" -eq 0 ]; then
+if [ "$lines" -eq 9 ] && [ "$pure" -eq 0 ]; then
   ok "stdout is exactly one JSON frame per request and nothing else"
 else
   bad "stdout is exactly one JSON frame per request and nothing else"

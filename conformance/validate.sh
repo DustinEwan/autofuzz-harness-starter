@@ -11,7 +11,7 @@
 #   - stdout is exactly one JSON `TemplateReport` and nothing else;
 #   - exit 0 even when a property fails; non-zero only when this validator itself
 #     could not run;
-#   - the seven fixture-shaped ids, never the three process-shaped ones;
+#   - the seven fixture-shaped ids, never the five process-shaped ones;
 #   - stderr is free text for the author.
 #
 # Rendered verbatim from conformance/validate.sh into the staged project; run as

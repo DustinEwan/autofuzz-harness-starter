@@ -37,13 +37,14 @@ jobs:
       - name: Validate
         run: afz install-harness "$GITHUB_WORKSPACE" --json > report.json
 
-      # The goldens this repository publishes: zero violations, eight template passes, and
-      # the same two justified absences on the protocol side and the fixture side. A deleted
-      # or gutted validator fails the second assertion.
+      # The goldens this repository publishes: zero violations, nine template passes,
+      # the three justified absences the manifest declares, and the two the fixture
+      # validator reports for itself. A deleted or gutted validator fails the second
+      # assertion.
       - name: Assert the report
         run: |
           jq -e '((.violations | length) == 0)
-                 and ((.template.properties | map(select(.verdict == "not-applicable") | .id) | sort) == ["coverage-digest-live","method-receiver"])
-                 and ((.template.properties | map(select(.verdict == "pass")) | length) == 8)' report.json
+                 and ((.template.properties | map(select(.verdict == "not-applicable") | .id) | sort) == ["coverage-digest-live","method-receiver","unbuildable-symbol"])
+                 and ((.template.properties | map(select(.verdict == "pass")) | length) == 9)' report.json
           jq -e '((.validator.properties | map(select(.verdict == "pass")) | length) == 5)
                  and ((.validator.properties | map(select(.verdict == "not-applicable") | .id) | sort) == ["coverage-digest-live","method-receiver"])' report.json

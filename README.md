@@ -1,10 +1,10 @@
 # autofuzz harness: starter
 
-The smallest harness plugin the autofuzz engine accepts, written so you can delete it into your own. It discovers executable files, reads each one's `# afz-param:` header lines as its signature, invokes each entry point with generated argv, and answers with fault outcomes and reproducer scripts over the plugin protocol (`afz/1`). It conforms to the same suite the production harnesses pass, with two properties declared not-applicable for reasons stated in the manifest.
+The smallest harness plugin the autofuzz engine accepts, written so you can delete it into your own. It discovers executable files, reads each one's `# afz-param:` header lines as its signature, invokes each entry point with generated argv, and answers with fault outcomes and reproducer scripts over the plugin protocol (`afz/1`). It conforms to the same suite the production harnesses pass, with three of the twelve template properties declared not-applicable for reasons stated in the manifest.
 
-Host runtime: a POSIX `sh` (the plugin runs under dash), coreutils (`find`, `timeout`, `sha256sum`, `sort`, `cut`, `sed`, `head`, `tr`), and any POSIX `awk`. JSON parsing is the vendored `vendor/JSON.sh`, which needs `bash`; the attribution file beside it says why a vendored parser beats a dependency you cannot assume. The plugin installs nothing and has no dependencies, so there is nothing to build and nothing to audit.
+Host runtime: a POSIX `sh` (the plugin runs under dash), coreutils (`find`, `timeout`, `sha256sum`, `sort`, `cut`, `sed`, `head`, `tr`), `iconv` (the only UTF-8 validator the plugin will trust, used to decide whether a target's stdout can be a string value at all), and any POSIX `awk`. JSON parsing is the vendored `vendor/JSON.sh`, which needs `bash`; the attribution file beside it says why a vendored parser beats a dependency you cannot assume. The plugin installs nothing and has no dependencies, so there is nothing to build and nothing to audit.
 
-The target model is one executable file per target, named by the file's base name. The outcome convention is the exit code: `0` is a return value (stdout is the value), `3` is the project's own guard refusal, `124` is the deadline cut by `timeout(1)`, `2` with dash's `file: line: token: message` line is a thrown shell error with a frame, and anything else is a thrown `Exit N` or `Signal N`.
+The target model is one executable file per target, named by the file's base name. The outcome convention is the exit code: `0` is a return value (stdout is the value, empty stdout is `undefined`, and stdout that is not text is a value the wire cannot carry, so the answer is ok with no value), `3` is the project's own guard refusal, `124` is the deadline cut by `timeout(1)`, `2` with dash's `file: line: token: message` line is a thrown shell error with a frame, and anything else is a thrown `Exit N` or `Signal N`.
 
 ## Install
 
@@ -60,7 +60,7 @@ This manifest carries no `install` and no `build`, because the scaffold has no d
 
 `conformance/validate.sh` is the project's own fixture validator: it reads the rendered files and coreutils only — never the plugin, never the emitter — and the suite requires its verdicts to agree with the plugin's.
 
-Two properties are declared not-applicable, and CI asserts these are the only such lines: an executable file has no receiver concept (every target runs as its own process), and the scaffold declares no coverage capability, so two inputs have no live digest that could differ.
+Three properties are declared not-applicable, and CI asserts these are the only such lines: an executable file has no receiver concept (every target runs as its own process), the scaffold declares no coverage capability (so two inputs have no live digest that could differ), and it has no build or load step of its own that could fail for one discovered symbol while its siblings build.
 
 ## The contract
 
